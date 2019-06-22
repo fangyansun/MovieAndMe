@@ -11,6 +11,8 @@ class Search extends React.Component{
 	constructor(props){
 		super(props)
 		this.searchedText= ""
+		this.page = 0
+		this.totalPages=0
 		this.state = {
 			films: [],
 			isLoading: false
@@ -20,13 +22,29 @@ class Search extends React.Component{
 	_loadFilms() {
 	    if (this.searchedText.length > 0) {
 	      this.setState({ isLoading: true }) // Lancement du chargement
-	      getFilmsFromApiWithSearchedText(this.searchedText).then(data => {
+	      getFilmsFromApiWithSearchedText(this.searchedText, this.page+1).then(data => {
+	      	  this.page = data.page
+	      	  this.totalPages = data.total_pages
 	          this.setState({ 
-	            films: data.results,
+	            films: this.state.films.concat(data.results),
 	            isLoading: false
 	          })
 	      })
 	    }
+	}
+
+	_searchFilms(){
+		//mettre à zero la liste du film, et les compteurs du page
+		this.page = 0
+	    this.totalPages = 0
+		this.setState({
+			films:[]
+		})
+
+		console.log("Page : " + this.page + " / TotalPages : " + this.totalPages + " / Nombre de films : " + this.state.films.length)
+
+		//telecharge les films
+		this._loadFilms()
 	}
 
 	_displayLoading() {
@@ -46,12 +64,13 @@ class Search extends React.Component{
 
 
 	render(){
-		console.log(this.state.isLoading)
+		//console.log(this.state.isLoading)
+		console.log(this.page, this.totalPages)
 		return (
 			<View style={styles.main_container}>
         		<TextInput 
         			style={styles.textinput} 
-        			onSubmitEditing={()=> this._loadFilms}
+        			onSubmitEditing={()=> this._searchFilms()}
         			placeholder='Titre du film'
         			onChangeText={(text) => this._searchTextInputChanged(text)}
         		/>
@@ -62,6 +81,12 @@ class Search extends React.Component{
 					data={this.state.films}
 					keyExtractor={(item) => item.id.toString()}
 					renderItem={({item}) => <FilmItem film={item}/>}
+					onEndReachedThreashold={0.5}
+					onEndReached={()=>{
+						if(this.page < this.totalPages){
+							this._loadFilms()
+						}
+					}}
 				/>
 				{this._displayLoading()}
       		</View>
