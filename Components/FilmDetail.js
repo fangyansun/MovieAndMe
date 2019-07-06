@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View, Text, ActivityIndicator, ScrollView, Image, Button} from 'react-native'
+import { StyleSheet, View, Text, ActivityIndicator, ScrollView, Image, TouchableOpacity} from 'react-native'
 import {getFilmDetailFromApi, getImageFromApi} from '../API/TMDBApi'
 import moment from 'moment'
 import numeral from 'numeral'
@@ -36,6 +36,19 @@ class FilmDetail extends React.Component {
     this.props.dispatch(action)
   }
 
+  _displayFavoriteImage(){
+    var sourceImage = require('../Images/nofavorite.png')
+    if (this.props.favoritesFilm.findIndex(item=> item.id ===this.state.film.id) !== -1){
+      sourceImage = require('../Images/favorite.png')
+    }
+    return(
+      <Image
+        style={styles.favorite_image}
+        source={sourceImage}
+      />
+    )
+  }
+
   componentDidUpdate(){
     console.log(this.props.favoritesFilm);
   }
@@ -50,7 +63,11 @@ class FilmDetail extends React.Component {
             source={{uri: getImageFromApi(film.backdrop_path)}}
           />
           <Text style={styles.title_text}>{film.title}</Text>
-          <Button title ="Favoris" onPress={()=> this._toggleFavorite()}/>
+          <TouchableOpacity 
+            style={styles.favorite_container}
+            onPress={()=> this._toggleFavorite()}>
+            {this._displayFavoriteImage()}
+          </TouchableOpacity>
           <Text style={styles.description_text}>{film.overview}</Text>
           <Text style={styles.default_text}>Sorti le {moment(new Date(film.release_date)).format('DD/MM/YYYY')}</Text>
           <Text style={styles.default_text}>Note : {film.vote_average} / 10</Text>
@@ -95,6 +112,13 @@ class FilmDetail extends React.Component {
 const styles = StyleSheet.create({
   main_container: {
     flex: 1
+  },
+  favorite_container: {
+    alignItems: 'center', // Alignement des components enfants sur l'axe secondaire, X ici
+  },
+  favorite_image: {
+    width: 40,
+    height: 40
   },
   loading_container: {
     position: 'absolute',
