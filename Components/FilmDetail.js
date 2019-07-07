@@ -4,6 +4,8 @@ import {getFilmDetailFromApi, getImageFromApi} from '../API/TMDBApi'
 import moment from 'moment'
 import numeral from 'numeral'
 import {connect} from 'react-redux'
+import EnlargeShrink from '../Animations/EnlargeShrink'
+
 
 
 const mapStateToProps = (state) => {
@@ -38,14 +40,19 @@ class FilmDetail extends React.Component {
 
   _displayFavoriteImage(){
     var sourceImage = require('../Images/nofavorite.png')
+    var shouldEnlarge = false
     if (this.props.favoritesFilm.findIndex(item=> item.id ===this.state.film.id) !== -1){
       sourceImage = require('../Images/favorite.png')
+      shouldEnlarge = true
     }
     return(
-      <Image
-        style={styles.favorite_image}
-        source={sourceImage}
-      />
+      <EnlargeShrink shouldEnlarge={shouldEnlarge}>
+        <Image
+          style={styles.favorite_image}
+          source={sourceImage}
+        />
+      </EnlargeShrink>
+
     )
   }
 
@@ -68,6 +75,7 @@ class FilmDetail extends React.Component {
             onPress={()=> this._toggleFavorite()}>
             {this._displayFavoriteImage()}
           </TouchableOpacity>
+
           <Text style={styles.description_text}>{film.overview}</Text>
           <Text style={styles.default_text}>Sorti le {moment(new Date(film.release_date)).format('DD/MM/YYYY')}</Text>
           <Text style={styles.default_text}>Note : {film.vote_average} / 10</Text>
@@ -124,7 +132,6 @@ class FilmDetail extends React.Component {
         {this._displayFilm()}
         {this._displayLoading()}
         {this._displayFloatingActionButton()}
-        
       </View>
     )
   }
@@ -138,8 +145,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Alignement des components enfants sur l'axe secondaire, X ici
   },
   favorite_image: {
-    width: 40,
-    height: 40
+    flex: 1,
+    width: null,
+    height: null
   },
   loading_container: {
     position: 'absolute',
